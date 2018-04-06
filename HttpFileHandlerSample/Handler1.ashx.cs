@@ -18,9 +18,9 @@ namespace HttpFileHandlerSample
             List<string> str = new List<string>();
 
             var str1 = new StringBuilder();
-            context.Response.ContentType = "text/plain";
-            str1.AppendLine("Total Number of files are " + context.Request.Files.Count);
-            str1.AppendLine("Total Number of Elemens are " + context.Request.Form.Count);
+            context.Response.ContentType = "text/html";
+            str1.AppendLine("Total Number of files are " + context.Request.Files.Count + "<br />");
+            str1.AppendLine("Total Number of Elemens are " + context.Request.Form.Count + "<br />");
             
             var files = context.Request.Files;
             var path = context.Server.MapPath("~/upload");
@@ -29,20 +29,29 @@ namespace HttpFileHandlerSample
             Directory.CreateDirectory(path);
 
 
-            foreach (var file in files)
+            for (int i=0;i<=files.Count-1;i++)
             {
-                HttpPostedFile postFIle = files[file.ToString()];
-                postFIle.SaveAs(path + "\\" + postFIle.FileName);
+                HttpPostedFile postedFile = files[i];
+                postedFile.SaveAs(path + "\\" + postedFile.FileName);
             }
-
-            
-
 
             var Name = context.Request.Form;
             foreach (var item in Name)
             {
-                str1.AppendLine(item.ToString() + " - " + Name[item.ToString()]);
+                str1.AppendLine(item.ToString() + " - " + Name[item.ToString()] + "<br />");
             }
+
+            DirectoryInfo dirInfo = new DirectoryInfo(path);
+            var allFiles = dirInfo.EnumerateFiles("*").OrderByDescending( x => x.CreationTime);
+            str1.AppendLine("<fieldset><legend>List of Files Uploaded</legend>");
+            foreach (var file in allFiles)
+            {
+                
+                str1.AppendLine("<a href='/upload/"+file.Name+"'>" + file.Name + "</a>" + "<br />");
+                
+            }
+            str1.AppendLine("</fieldset>");
+
             context.Response.Write(str1.ToString());
         }
 
