@@ -15,6 +15,11 @@ namespace HttpFileHandlerSample
 
         public void ProcessRequest(HttpContext context)
         {
+            if (context.Request.Form.Count == 0 && context.Request.Files.Count == 0)
+            {
+                throw new Exception("This file is supposed to be accessed only via a webpage having <form> object");
+            }
+
             DeleteAllFiles(context);
 
             //Simulating delay. Remove Thread.sleep method for production
