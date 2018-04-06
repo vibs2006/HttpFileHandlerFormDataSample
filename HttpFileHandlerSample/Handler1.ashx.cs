@@ -57,7 +57,7 @@ namespace HttpFileHandlerSample
             foreach (var file in allFiles)
             {
                 
-                str1.AppendLine("<a href='/upload/"+file.Name+"'>" + file.Name + "</a>" + "<br />");
+                str1.AppendLine("<a href='/upload/"+file.Name+"' target='_blank'>" + file.Name + "</a>" + "<br />");
                 
             }
             str1.AppendLine("</fieldset>");
