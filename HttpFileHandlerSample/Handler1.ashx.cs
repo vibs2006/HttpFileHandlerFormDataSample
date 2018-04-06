@@ -20,10 +20,19 @@ namespace HttpFileHandlerSample
                 throw new Exception("This file is supposed to be accessed only via a webpage having <form> object");
             }
 
-            DeleteAllFiles(context);
+            var path = context.Server.MapPath("~/upload");
+
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+            else
+            {
+                DeleteAllFiles(context,path);
+            }
 
             //Simulating delay. Remove Thread.sleep method for production
-            System.Threading.Thread.Sleep(4000); //4 Seconds
+            System.Threading.Thread.Sleep(2500); //2.5 Seconds
 
             List<string> str = new List<string>();
 
@@ -34,10 +43,7 @@ namespace HttpFileHandlerSample
             str1.AppendLine("Total Number of Elements are " + context.Request.Form.Count + "<br />");
             str1.AppendLine("</fieldset>");
             var files = context.Request.Files;
-            var path = context.Server.MapPath("~/upload");
-
-            if (!Directory.Exists(path))
-            Directory.CreateDirectory(path);
+           
 
             //Saving All Files from Files collection
             for (int i=0;i<files.Count;i++) //Notice that index starts from ZERO!
@@ -72,13 +78,11 @@ namespace HttpFileHandlerSample
         /// Deleting all previous files before sending new request so that our state is clean for each example
         /// </summary>
         /// <param name="context"></param>
-        public void DeleteAllFiles(HttpContext context)
+        public void DeleteAllFiles(HttpContext context, string path)
         {
-            //throw new Exception("Custom ExceptionCalled"); Test for Failture
-            var path = context.Server.MapPath("~/upload");
+            //throw new Exception("Custom ExceptionCalled"); Test for Failture                       
             DirectoryInfo dirInfo = new DirectoryInfo(path);
-            var allFiles = dirInfo.EnumerateFiles("*").OrderByDescending(x => x.CreationTime);
-            
+            var allFiles = dirInfo.EnumerateFiles("*");            
             foreach (var file in allFiles)
             {
                 File.Delete(file.FullName);
