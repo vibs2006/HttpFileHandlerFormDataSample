@@ -15,6 +15,8 @@ namespace HttpFileHandlerSample
 
         public void ProcessRequest(HttpContext context)
         {
+            DeleteAllFiles(context);
+
             List<string> str = new List<string>();
 
             var str1 = new StringBuilder();
@@ -53,6 +55,19 @@ namespace HttpFileHandlerSample
             str1.AppendLine("</fieldset>");
 
             context.Response.Write(str1.ToString());
+        }
+
+        public void DeleteAllFiles(HttpContext context)
+        {
+            var path = context.Server.MapPath("~/upload");
+            DirectoryInfo dirInfo = new DirectoryInfo(path);
+            var allFiles = dirInfo.EnumerateFiles("*").OrderByDescending(x => x.CreationTime);
+            
+            foreach (var file in allFiles)
+            {
+                File.Delete(file.FullName);
+
+            }
         }
 
         public bool IsReusable
