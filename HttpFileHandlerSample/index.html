@@ -3,6 +3,16 @@
 <head>
     <title></title>
 	<meta charset="utf-8" />
+    <style type="text/css">
+        .success{
+            color:darkgreen;            
+        }
+
+        .fail{
+            color:red;            
+        }
+
+    </style>
 </head>
 <body>
     <script src="https://code.jquery.com/jquery-2.2.4.js" type="text/javascript"></script>
@@ -37,17 +47,79 @@
             <tr>
                 <td></td>
                 <td>
-                    <input id="Submit1" type="submit" value="submit with postback" />
+                    <input id="btnSubmitWithPostBack" type="submit" value="submit with postback" />                    
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>                 
+                    <input id="btnSubmitWithoutPostBack" type="button" value="submit without postback" />
                 </td>
             </tr>
         </table>      
     </form>
 </fieldset>
 
+<fieldset>
+    <legend>Status</legend>
+    <div id="divDynamic"></div>
+</fieldset>
+
 
     <script>
         $(function () {
            
+            $("#btnSubmitWithoutPostBack").on("click", function () {
+                var form = $("#frmData");
+                var params = form.serializeArray();
+
+                var files = $("#File1")[0].files;
+
+                if (typeof (FormData) == "undefined") alert("Please update to latest browser");
+
+                var customFormData = new FormData();
+
+                //Populating all files in custom form data
+                for (var i=0; i < files.length; i++)
+                {
+                    customFormData.append(files[i].name, files[i]);
+                }
+
+                //Populating all input field names (ensure that you have attribute name in their columns as id doesn't work
+                $.each(params, function (index,element) {
+                    customFormData.append(element.name, element.value);
+                });
+
+                var btn = $(this);
+                btn.val("Uploading..");
+                btn.prop("disabled", true);
+                var dynamicDiv = $("#divDynamic");
+                dynamicDiv.html("");
+                dynamicDiv.attr("class", ""); //Remove all classes
+                $.ajax({
+                    url: "Handler1.ashx",
+                    method: "post",
+                    contentType: false,
+                    processData: false,
+                    data: customFormData,
+                    success: function (successData) {
+                        dynamicDiv.html(successData);
+                        alert("Upload Completed");
+                        dynamicDiv.addClass("success");
+                    },
+                    error: function (errorData) {
+                        console.log(errorData);
+                        alert("Error in uploading");
+                        $("#divDynamic").html(errorData.responseText);
+                        dynamicDiv.addClass("fail");
+                    },
+                    complete: function () {
+                        btn.val("submit without postback");
+                        btn.prop("disabled", false);
+                    }
+                });
+            });
+
 
         });
 
