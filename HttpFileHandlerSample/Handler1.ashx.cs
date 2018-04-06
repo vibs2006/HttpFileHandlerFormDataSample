@@ -49,7 +49,8 @@ namespace HttpFileHandlerSample
             for (int i=0;i<files.Count;i++) //Notice that index starts from ZERO!
             {
                 HttpPostedFile postedFile = files[i];
-                postedFile.SaveAs(path + "\\" + postedFile.FileName);
+                string fileName = Path.GetFileName(postedFile.FileName);
+                postedFile.SaveAs(path + "\\" + fileName);
             }
             
 
