@@ -34,8 +34,8 @@ namespace HttpFileHandlerSample
             if (!Directory.Exists(path))
             Directory.CreateDirectory(path);
 
-            
-            for (int i=0;i<=files.Count-1;i++)
+            //Saving All Files from Files collection
+            for (int i=0;i<files.Count;i++) //Notice that index starts from ZERO!
             {
                 HttpPostedFile postedFile = files[i];
                 postedFile.SaveAs(path + "\\" + postedFile.FileName);
@@ -55,16 +55,18 @@ namespace HttpFileHandlerSample
             var allFiles = dirInfo.EnumerateFiles("*").OrderByDescending( x => x.CreationTime);
             str1.AppendLine("<fieldset><legend>List of Files Uploaded</legend>");
             foreach (var file in allFiles)
-            {
-                
-                str1.AppendLine("<a href='/upload/"+file.Name+"' target='_blank'>" + file.Name + "</a>" + "<br />");
-                
+            {                
+                str1.AppendLine("<a href='/upload/"+file.Name+"' target='_blank'>" + file.Name + "</a>" + "<br />");                
             }
             str1.AppendLine("</fieldset>");
 
             context.Response.Write(str1.ToString());
         }
 
+        /// <summary>
+        /// Deleting all previous files before sending new request so that our state is clean for each example
+        /// </summary>
+        /// <param name="context"></param>
         public void DeleteAllFiles(HttpContext context)
         {
             //throw new Exception("Custom ExceptionCalled"); Test for Failture
