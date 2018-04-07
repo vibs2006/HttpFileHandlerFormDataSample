@@ -50,6 +50,7 @@ namespace HttpFileHandlerSample
             {
                 HttpPostedFile postedFile = files[i];
                 string fileName = Path.GetFileName(postedFile.FileName);
+                string fileext = Path.GetExtension(fileName); //You can use Extension to your benefit.
                 postedFile.SaveAs(path + "\\" + fileName);
             }
             
@@ -68,7 +69,7 @@ namespace HttpFileHandlerSample
             str1.AppendLine("<fieldset><legend>List of Files Uploaded</legend>");
             foreach (var file in allFiles)
             {                
-                str1.AppendLine("<a href='/upload/"+file.Name+"' target='_blank'>" + file.Name + "</a>" + "<br />");                
+                str1.AppendLine("<a href='/upload/"+file.Name+"' target='_blank'>" + file.Name + "</a> - File Extension (" + file.Extension  + ")<br />");                
             }
             str1.AppendLine("</fieldset>");
 
