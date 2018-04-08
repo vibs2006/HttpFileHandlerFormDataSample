@@ -62,6 +62,7 @@
   <ItemGroup>
     <Content Include="calculateFileSize.html" />
     <Content Include="Handler1.ashx" />
+    <None Include="Properties\PublishProfiles\t.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

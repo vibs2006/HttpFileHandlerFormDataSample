@@ -42,6 +42,7 @@
                 </td>
                 <td>
                     <input id="File1" type="file" multiple="multiple" name="File1" />
+                    <!--Remote attribute 'multiple' from File1 if you want to upload ONLY Single file-->
                 </td>
             </tr>
             <tr>
@@ -56,6 +57,11 @@
                     <input id="btnSubmitWithoutPostBack" type="button" value="submit without postback" />
                 </td>
             </tr>
+            <tr>
+                <td colspan="2">
+                    <span id="totalFilesInfo" style="display:none;"></span>
+                </td>
+            </tr>
         </table>      
     </form>
 </fieldset>
@@ -68,7 +74,8 @@
 
     <script>
         $(function () {
-           
+            var totalFileSize = 0;
+
             $("#btnSubmitWithoutPostBack").on("click", function () {
                 var form = $("#frmData");
                 var params = form.serializeArray();
@@ -83,6 +90,7 @@
                 for (var i=0; i < files.length; i++)
                 {
                     customFormData.append(files[i].name, files[i]);
+                    totalFileSize = totalFileSize + files[i].size; //In Bytes. Do whatever you want to do with size like maximum                    
                 }
 
                 //Populating all input field names (ensure that you have attribute name in their columns as id doesn't work
@@ -132,8 +140,35 @@
                         btn.val("submit without postback");
                         btn.prop("disabled", false);
                     }
-                });
-            });
+                }); //End of Ajax Functions
+            });// End of event handler
+
+            $("#File1").on("change", function () {
+                totalFileSize = 0;
+
+                var files = $("#File1")[0].files;
+                var strSpanMessage = '';
+
+                for (var i = 0; i < files.length; i++)
+                {                    
+                    totalFileSize = totalFileSize + files[i].size; //In bytes
+                    var fileName = files[i].name;
+                    var fileExtensionIndex = fileName.toLowerCase().lastIndexOf(".");
+                    var extension = fileName.substr(fileExtensionIndex);
+                    strSpanMessage = strSpanMessage.concat("Type of File is <i>", files[i].type, "</i>, File name is <b>", fileName + "</b> and file extension is (", extension, ")<br />");
+                }
+                if (totalFileSize > 0)
+                {
+                    strSpanMessage = strSpanMessage.concat("Total Selected File Size is ", (totalFileSize / 1024).toString(), " KB");
+                    $("#totalFilesInfo").html(strSpanMessage);
+                    console.log(strSpanMessage)
+                    $("#totalFilesInfo").show();                    
+                }
+                else
+                {
+                    $("#totalFilesInfo").hide();
+                }
+            });//End of File Change Event Handler
 
 
         });
