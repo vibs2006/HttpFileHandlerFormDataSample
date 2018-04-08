@@ -2,7 +2,8 @@
 <html>
 <head>
     <title></title>
-	<meta charset="utf-8" />
+	<meta charset="utf-8" />   
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />    
     <style type="text/css">
         .success{
             color:darkgreen;            
@@ -16,16 +17,17 @@
 </head>
 <body>
     <script src="https://code.jquery.com/jquery-2.2.4.js" type="text/javascript"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" type="text/javascript"></script>
 <fieldset title="Using Form Postback">
     <legend>Using Form Postback</legend>
     <form enctype="multipart/form-data" method="post" id="frmData" action="Handler1.ashx">
-        <table>
+        <table class="table">
             <tr>
                 <td>
                     Name
                 </td>
                 <td>
-                    <input id="txtName" name="txtName" type="text" />
+                    <input id="txtName" name="txtName" type="text" value="Test Name" />
                 </td>
             </tr>
             <tr>
@@ -33,7 +35,7 @@
                     Password
                 </td>
                 <td>
-                    <input id="txtPassword" name="txtPassword" type="text" />
+                    <input id="txtPassword" name="txtPassword" type="password" value="Test Password" />
                 </td>
             </tr>
             <tr>
@@ -58,8 +60,10 @@
                 </td>
             </tr>
             <tr>
-                <td>
-                    <progress id="progressBar" style="display:none;"></progress>
+                <td colspan="2">
+                    <div id="divUploadProgress" style="width:100%;display:none;">
+                        <progress id="progressBar" style="width:100%;"></progress>
+                    </div>
                 </td>
             </tr>
             <tr>
@@ -121,15 +125,11 @@
                     method: "post",
                     xhr: function () {
                         //File Progress Handler
-                        var xhr = $.ajaxSettings.xhr();
-                        progressBar.show();
+                        var xhr = $.ajaxSettings.xhr();                        
+                        $("#divUploadProgress").fadeIn();
                         console.log("Total file size " + totalFileSize);
                         xhr.upload.onprogress = function (ev) {
-
-                           // console.log(progressData);
-                           // console.log(ev);
-                            console.log(ev.loaded + " / " + ev.total);
-                           // console.log(ev.loaded);
+                            console.log(ev.loaded + " / " + ev.total);                           
                             progressBar.attr("value", ev.loaded);
                         }
                         return xhr;
@@ -156,7 +156,7 @@
                     complete: function () {
                         btn.val("submit without postback");
                         btn.prop("disabled", false);
-                        //progressBar.fadeOut();
+                        $("#divUploadProgress").fadeOut(2000);
                     }
                 }); //End of Ajax Functions
             });// End of event handler
