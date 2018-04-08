@@ -99,6 +99,21 @@
                 $.ajax({
                     url: "Handler1.ashx",
                     method: "post",
+                    xhr: function () {
+                        //File Progress Handler
+                        var xhr = $.ajaxSettings.xhr();
+
+                        xhr.upload.onprogress = function (ev) {
+
+                           // console.log(progressData);
+                            console.log(ev);
+                            console.log(ev.total);
+                            console.log(ev.loaded);
+
+                        }
+                        return xhr;
+                    },
+                  
                     contentType: false,
                     processData: false,
                     data: customFormData,
