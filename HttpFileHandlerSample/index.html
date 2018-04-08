@@ -58,6 +58,11 @@
                 </td>
             </tr>
             <tr>
+                <td>
+                    <progress id="progressBar" style="display:none;"></progress>
+                </td>
+            </tr>
+            <tr>
                 <td colspan="2">
                     <span id="totalFilesInfo" style="display:none;"></span>
                 </td>
@@ -67,7 +72,7 @@
 </fieldset>
 
 <fieldset>
-    <legend>Status</legend>
+    <legend><span id="status"></span></legend>
     <div id="divDynamic"></div>
 </fieldset>
 
@@ -77,8 +82,11 @@
             var totalFileSize = 0;
 
             $("#btnSubmitWithoutPostBack").on("click", function () {
+                totalFileSize = 0;
                 var form = $("#frmData");
                 var params = form.serializeArray();
+
+                var progressBar = $("#progressBar");
 
                 var files = $("#File1")[0].files;
 
@@ -92,6 +100,10 @@
                     customFormData.append(files[i].name, files[i]);
                     totalFileSize = totalFileSize + files[i].size; //In Bytes. Do whatever you want to do with size like maximum                    
                 }
+
+                progressBar.attr("value", 0);
+                progressBar.attr("max", totalFileSize);
+
 
                 //Populating all input field names (ensure that you have attribute name in their columns as id doesn't work
                 $.each(params, function (index,element) {
@@ -110,14 +122,15 @@
                     xhr: function () {
                         //File Progress Handler
                         var xhr = $.ajaxSettings.xhr();
-
+                        progressBar.show();
+                        console.log("Total file size " + totalFileSize);
                         xhr.upload.onprogress = function (ev) {
 
                            // console.log(progressData);
-                            console.log(ev);
-                            console.log(ev.total);
-                            console.log(ev.loaded);
-
+                           // console.log(ev);
+                            console.log(ev.loaded + " / " + ev.total);
+                           // console.log(ev.loaded);
+                            progressBar.attr("value", ev.loaded);
                         }
                         return xhr;
                     },
@@ -126,19 +139,24 @@
                     processData: false,
                     data: customFormData,
                     success: function (successData) {
+                        $("#status").html("Form Data submitted successfully");
                         dynamicDiv.html(successData);
-                        alert("Upload Completed");
+                        //alert("Upload Completed");
                         dynamicDiv.addClass("success");
+                        $("#status").addClass("success");
                     },
                     error: function (errorData) {
                         console.log(errorData);
-                        alert("Error in uploading");
+                        //alert("Error in uploading");
+                        $("#status").html("Error in uploading");
                         $("#divDynamic").html(errorData.responseText);
                         dynamicDiv.addClass("fail");
+                        $("#status").addClass("fail");
                     },
                     complete: function () {
                         btn.val("submit without postback");
                         btn.prop("disabled", false);
+                        //progressBar.fadeOut();
                     }
                 }); //End of Ajax Functions
             });// End of event handler
