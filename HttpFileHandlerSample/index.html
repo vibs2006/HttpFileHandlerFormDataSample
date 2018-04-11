@@ -57,7 +57,7 @@
                 <td></td>
                 <td>                 
                     <input id="btnSubmitWithoutPostBack" type="button" value="submit without postback" />
-                    <input id="btnSubmitWithoutPostBackHttpClient" type="button" value="submit without postback to WebApi" />
+                    <input id="btnSubmitWithoutPostBackToWebApi" type="button" value="submit without postback to WebApi" />
                 </td>
             </tr>
             <tr>
@@ -189,7 +189,7 @@
                 }
             });//End of File Change Event Handler
 
-            $("#btnSubmitWithoutPostBackHttpClient").on("click", function () {
+            $("#btnSubmitWithoutPostBackToWebApi").on("click", function () {
                 totalFileSize = 0;
                 var form = $("#frmData");
                 var params = form.serializeArray();
