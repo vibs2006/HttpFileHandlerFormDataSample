@@ -57,6 +57,7 @@
                 <td></td>
                 <td>                 
                     <input id="btnSubmitWithoutPostBack" type="button" value="submit without postback" />
+                    <input id="btnSubmitWithoutPostBackHttpClient" type="button" value="submit without postback to WebApi" />
                 </td>
             </tr>
             <tr>
@@ -188,6 +189,80 @@
                 }
             });//End of File Change Event Handler
 
+            $("#btnSubmitWithoutPostBackHttpClient").on("click", function () {
+                totalFileSize = 0;
+                var form = $("#frmData");
+                var params = form.serializeArray();
+
+                var progressBar = $("#progressBar");
+
+                var files = $("#File1")[0].files;
+
+                if (typeof (FormData) == "undefined") alert("Please update to latest browser");
+
+                var customFormData = new FormData();
+
+                //Populating all files in custom form data
+                for (var i = 0; i < files.length; i++) {
+                    customFormData.append(files[i].name, files[i]);
+                    totalFileSize = totalFileSize + files[i].size; //In Bytes. Do whatever you want to do with size like maximum                    
+                }
+
+                progressBar.attr("value", 0);
+                progressBar.attr("max", totalFileSize);
+
+
+                //Populating all input field names (ensure that you have attribute name in their columns as id doesn't work
+                $.each(params, function (index, element) {
+                    customFormData.append(element.name, element.value);
+                });
+
+                var btn = $(this);
+                btn.val("Uploading..");
+                btn.prop("disabled", true);
+                var dynamicDiv = $("#divDynamic");
+                dynamicDiv.html("");
+                dynamicDiv.attr("class", ""); //Remove all classes
+                $.ajax({
+                    url: "/api/Main/getAllDetails",
+                    method: "post",
+                    xhr: function () {
+                        //File Progress Handler
+                        var xhr = $.ajaxSettings.xhr();
+                        $("#divUploadProgress").fadeIn();
+                        console.log("Total file size " + totalFileSize);
+                        xhr.upload.onprogress = function (ev) {
+                            console.log(ev.loaded + " / " + ev.total);
+                            progressBar.attr("value", ev.loaded);
+                        }
+                        return xhr;
+                    },
+
+                    contentType: false,
+                    processData: false,
+                    data: customFormData,
+                    success: function (successData) {
+                        $("#status").html("Form Data submitted successfully");
+                        dynamicDiv.html(successData);
+                        //alert("Upload Completed");
+                        dynamicDiv.addClass("success");
+                        $("#status").addClass("success");
+                    },
+                    error: function (errorData) {
+                        console.log(errorData);
+                        //alert("Error in uploading");
+                        $("#status").html("Error in uploading");
+                        $("#divDynamic").html(errorData.responseText);
+                        dynamicDiv.addClass("fail");
+                        $("#status").addClass("fail");
+                    },
+                    complete: function () {
+                        btn.val("submit without postback");
+                        btn.prop("disabled", false);
+                        $("#divUploadProgress").fadeOut(2000);
+                    }
+                }); //End of Ajax Functions
+            });// End of event handler
 
         });
 
