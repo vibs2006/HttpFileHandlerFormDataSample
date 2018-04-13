@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Web;
 using System.IO;
 using System.Web.Http;
+using System.Web.Routing;
 
 namespace HttpFileHandlerSample.Controllers
 {
@@ -20,14 +21,17 @@ namespace HttpFileHandlerSample.Controllers
             return Ok("vibs");
         }
 
+        /// <summary>
+        /// Accept Large File Uploads as it use Bufferless Input Stream Internall
+        /// </summary>
+        /// <returns></returns>
         [HttpPost]
-        [ActionName("uploadLargeFormData")]
+        [Route("~/api/main/uploadLargeFormData")]
         public async Task<IHttpActionResult> uploadLargeFormData()
         {
             
             Stream rawStream =
                 HttpContext.Current.Request.GetBufferlessInputStream(true);
-
 
             var streamContent = new StreamContent(rawStream);
             foreach (var header in Request.Content.Headers)
@@ -42,41 +46,46 @@ namespace HttpFileHandlerSample.Controllers
 
             var files = multipartFormContents.FileData;
 
-            //foreach (var file in files)
-            //{
-            //   files[]
-            //}
+            var path = HttpContext.Current.Server.MapPath("~/upload");
 
-
-            //for (int i = 0; i< multipartFormContents.Contents.Count; i++)
-            //{
-            //    var stream = await multipartFormContents.Contents[i].ReadAsStreamAsync();
-
-            //    var path = HttpContext.Current.Server.MapPath("~/upload");
-            //    if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-
-            //    FileStream fs = new FileStream(path + "/" + DateTime.Now.ToString("yyMMddHHmmss"), FileMode.CreateNew);
-                                
-            //        await Task.Delay(1000);
-            //        await stream.CopyToAsync(fs); 
+            foreach (var file in files)
+            {
+                if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+                //FileInfo fi = new FileInfo(file.LocalFileName);
+                var localFileNameWithoutQuotes = file.Headers.ContentDisposition.FileName.Replace("\"", "");
                 
+                //File has to be moved from App_Data otherwise it'll remain there foreever. If this fails then try File.Copy followed or File.Delete of the original file.                                
+                var newFileNameWithPath = Path.Combine(path, localFileNameWithoutQuotes);
 
-                
-            //}
-            
+                //Checking if File Exists on the upload file path location
+                if (File.Exists(newFileNameWithPath))
+                {
+                    File.GetAccessControl(newFileNameWithPath);
+                    File.Delete(newFileNameWithPath);
+                }
+                File.Copy(file.LocalFileName, newFileNameWithPath);
+            }
+
+            foreach (var formValue in multipartFormContents.FormData)
+            {
+                textWrite($"{formValue} - {multipartFormContents.FormData[formValue.ToString()]}");
+            }
+
+            //Cleaning File Data files
+            foreach (var file in files)
+            {
+                File.Delete(file.LocalFileName);
+            }
 
             //Stream reqStream = Request.Content.ReadAsStreamAsync().Result;
             //MemoryStream tempStream = new MemoryStream();
             //reqStream.CopyTo(tempStream);
-
-
 
             //tempStream.Seek(0, SeekOrigin.End);
             //StreamWriter writer = new StreamWriter(tempStream);
             //writer.WriteLine();
             //writer.Flush();
             //tempStream.Position = 0;
-
 
             //StreamContent streamContent = new StreamContent(tempStream);
             //foreach (var header in Request.Content.Headers)
@@ -92,8 +101,9 @@ namespace HttpFileHandlerSample.Controllers
             return Ok("Success");
         }
 
-        //[HttpPost]
-        private async Task<IHttpActionResult> getAllDetails()
+        [HttpPost]        
+        [Route("~/api/main/AcceptAllDetails")]
+        public async Task<IHttpActionResult> AcceptAllDetails()
         {
             var isMultiForm = Request.Content.IsMimeMultipartContent();
 

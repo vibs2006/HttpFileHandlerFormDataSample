@@ -16,6 +16,13 @@ namespace HttpFileHandlerSample
                 routeTemplate: "api/{controller}/{id}",
                 defaults: new { id = RouteParameter.Optional }
             );
+
+            //Use following if you want to define via ActionName (for multiple web api methods)
+            //config.Routes.MapHttpRoute(
+            //    name: "DefaultActionControllerApi", 
+            //        routeTemplate : "api/{controller}/{action}",
+            //        defaults: null                
+            //    );
         }
     }
 }
