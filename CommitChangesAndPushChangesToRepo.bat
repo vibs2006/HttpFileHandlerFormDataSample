@@ -1,0 +1,1 @@
+git add . && git commit -m "Message Commit %date% %time%" && git push origin master -u -v && exit
