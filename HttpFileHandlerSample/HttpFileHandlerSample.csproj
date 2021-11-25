@@ -22,6 +22,7 @@
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <Use64BitIISExpress />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -79,6 +80,7 @@
   <ItemGroup>
     <Content Include="calculateFileSize.html" />
     <Content Include="Handler1.ashx" />
+    <Content Include="UploadDynamicFileInputs.html" />
     <Content Include="packages.config" />
     <None Include="Properties\PublishProfiles\t.pubxml" />
     <None Include="Web.Debug.config">

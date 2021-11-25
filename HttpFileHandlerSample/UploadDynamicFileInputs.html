@@ -1,0 +1,227 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+	<meta charset="utf-8" />   
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />    
+    <style type="text/css">
+        .success{
+            color:darkgreen;            
+        }
+
+        .fail{
+            color:red;            
+        }
+
+    </style>
+</head>
+<body>
+    <script src="https://code.jquery.com/jquery-2.2.4.js" type="text/javascript"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" type="text/javascript"></script>
+<fieldset title="Using Form Postback">
+    <legend>Using Form Postback</legend>
+    <form enctype="multipart/form-data" method="post" id="frmData" action="Handler1.ashx">
+        <table class="table" id="tblFileUpload" style="width:600px;">           
+            <tr class="fileRow">
+                <td>
+                    File No.1
+                </td>
+                <td>
+                    <input id="File1" type="file" name="File1" />
+                    <!--Remote attribute 'multiple' from File1 if you want to upload ONLY Single file-->             
+                </td>
+                <td>
+                    <a href="javascript:void(0)" class="glyphicon glyphicon-plus-sign addMoreFiles"></a>
+                </td>
+            </tr>            
+            
+        </table>
+        <table class="table">
+            <tr>
+                <td></td>
+                <td>
+                    <input id="btnSubmitWithoutPostBack" type="button" value="submit without postback" />
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div id="divUploadProgress" style="width:100%;display:none;">
+                        <progress id="progressBar" style="width:100%;"></progress>
+                    </div>
+                </td>
+                <td>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <span id="totalFilesInfo" style="display:none;"></span>
+                </td>
+                <td>
+                </td>
+            </tr>
+        </table>
+    </form>
+</fieldset>
+
+<fieldset>
+    <legend><span id="status"></span></legend>
+    <div id="divDynamic"></div>
+</fieldset>
+
+
+    <script>
+
+        // First, checks if it isn't implemented yet.
+        if (!String.prototype.format) {
+            String.prototype.format = function () {
+                var args = arguments;
+                return this.replace(/{(\d+)}/g, function (match, number) {
+                    return typeof args[number] != 'undefined'
+                        ? args[number]
+                        : match
+                        ;
+                });
+            };
+        }
+
+        $(function () {
+            var totalFileSize = 0;
+
+            /*
+             var tr;
+                tr = $('<tr/>');
+                tr.append("<td>" + name + "</td>");
+                tr.append("<td>" + address + "</td>");
+                $('#commenttable').append(tr);
+             */
+
+            var fnGenerateTD = function (intFileNumber) {
+
+                return '<tr class="fileRow">' +
+                        '<td>' +
+                        'File No.{0}</td >'.format(intFileNumber.toString()) +
+                        '<td>' +
+                            '<input id="File{0}" type="file" name="File{0}" />'.format(intFileNumber.toString()) +
+                        '</td>' +
+                    '<td>' +
+                    '<a href="javascript:void(0)" class="glyphicon glyphicon-plus-sign addMoreFiles" id="File{0}"></a>'.format(intFileNumber.toString()) +
+                        '</td>' +
+                    '</tr >';
+            }
+
+            $(document).on("click", ".addMoreFiles", function () {
+
+                var newFileLength = $(".fileRow").length + 1;
+
+                $('#tblFileUpload').append(fnGenerateTD(newFileLength));
+
+            });
+
+            $("#btnSubmitWithoutPostBack").on("click", function () {
+                totalFileSize = 0;
+                var form = $("#frmData");
+                var params = form.serializeArray();
+
+                var progressBar = $("#progressBar");
+
+                var files = $("#File1")[0].files;
+
+                if (typeof (FormData) == "undefined") alert("Please update to latest browser");
+
+                var customFormData = new FormData();
+
+                //Populating all files in custom form data
+                for (var i=0; i < files.length; i++)
+                {
+                    customFormData.append(files[i].name, files[i]);
+                    totalFileSize = totalFileSize + files[i].size; //In Bytes. Do whatever you want to do with size like maximum                    
+                }
+
+                progressBar.attr("value", 0);
+                progressBar.attr("max", totalFileSize);
+
+
+                //Populating all input field names (ensure that you have attribute name in their columns as id doesn't work
+                $.each(params, function (index,element) {
+                    customFormData.append(element.name, element.value);
+                });
+
+                var btn = $(this);
+                btn.val("Uploading..");
+                btn.prop("disabled", true);
+                var dynamicDiv = $("#divDynamic");
+                dynamicDiv.html("");
+                dynamicDiv.attr("class", ""); //Remove all classes
+                $.ajax({
+                    url: "Handler1.ashx",
+                    method: "post",
+                    xhr: function () {
+                        //File Progress Handler
+                        var xhr = $.ajaxSettings.xhr();                        
+                        $("#divUploadProgress").fadeIn();
+                        console.log("Total file size " + totalFileSize);
+                        xhr.upload.onprogress = function (ev) {
+                            console.log(ev.loaded + " / " + ev.total);                           
+                            progressBar.attr("value", ev.loaded);
+                        }
+                        return xhr;
+                    },
+                  
+                    contentType: false,
+                    processData: false,
+                    data: customFormData,
+                    success: function (successData) {
+                        $("#status").html("Form Data submitted successfully");
+                        dynamicDiv.html(successData);
+                        //alert("Upload Completed");
+                        dynamicDiv.addClass("success");
+                        $("#status").addClass("success");
+                    },
+                    error: function (errorData) {
+                        console.log(errorData);
+                        //alert("Error in uploading");
+                        $("#status").html("Error in uploading");
+                        $("#divDynamic").html(errorData.responseText);
+                        dynamicDiv.addClass("fail");
+                        $("#status").addClass("fail");
+                    },
+                    complete: function () {
+                        btn.val("submit without postback");
+                        btn.prop("disabled", false);
+                        $("#divUploadProgress").fadeOut(2000);
+                    }
+                }); //End of Ajax Functions
+            });// End of event handler
+
+            $("#File1").on("change", function () {
+                totalFileSize = 0;
+
+                var files = $("#File1")[0].files;
+                var strSpanMessage = '';
+
+                for (var i = 0; i < files.length; i++)
+                {                    
+                    totalFileSize = totalFileSize + files[i].size; //In bytes
+                    var fileName = files[i].name;
+                    var fileExtensionIndex = fileName.toLowerCase().lastIndexOf(".");
+                    var extension = fileName.substr(fileExtensionIndex);
+                    strSpanMessage = strSpanMessage.concat("Type of File is <i>", files[i].type, "</i>, File name is <b>", fileName + "</b> and file extension is (", extension, ")<br />");
+                }
+                if (totalFileSize > 0)
+                {
+                    strSpanMessage = strSpanMessage.concat("Total Selected File Size is ", (totalFileSize / 1024).toString(), " KB");
+                    $("#totalFilesInfo").html(strSpanMessage);
+                    console.log(strSpanMessage)
+                    $("#totalFilesInfo").show();                    
+                }
+                else
+                {
+                    $("#totalFilesInfo").hide();
+                }
+            });//End of File Change Event Handler           
+
+        });
+
+    </script>
+</body>
+</html>
