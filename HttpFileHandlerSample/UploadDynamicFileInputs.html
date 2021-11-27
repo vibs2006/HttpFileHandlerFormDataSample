@@ -21,8 +21,8 @@
 <fieldset title="Using Form Postback">
     <legend>Using Form Postback</legend>
     <form enctype="multipart/form-data" method="post" id="frmData" action="Handler1.ashx">
-        <table class="table" id="tblFileUpload" style="width:600px;">           
-            <tr class="fileRow">
+        <table class="table" id="tblFileUpload" style="width:600px;" data-section-name="Section1">           
+            <tr class="fileRow" data-number="1">
                 <td>
                     File No.1
                 </td>
@@ -38,18 +38,18 @@
         </table>
         <table class="table">
             <tr>
-                <td></td>
-                <td>
-                    <input id="btnSubmitWithoutPostBack" type="button" value="submit without postback" />
-                </td>
-            </tr>
-            <tr>
                 <td colspan="2">
                     <div id="divUploadProgress" style="width:100%;display:none;">
-                        <progress id="progressBar" style="width:100%;"></progress>
+                        <progress id="progressBarSection1" style="width:100%;"></progress>
                     </div>
                 </td>
                 <td>
+                </td>
+            </tr>           
+            <tr>
+                <td></td>
+                <td>
+                    <input id="btnUploadSection1Files" type="button" value="Upload Section 1 Files" />
                 </td>
             </tr>
             <tr>
@@ -85,7 +85,16 @@
         }
 
         $(function () {
+
             var totalFileSize = 0;
+
+            var section1Name = { "Section1": "Section1" };
+            var section2Name = { "Section2": "Section2" };
+            var section3Name = { "Section3": "Section3" };
+
+            var maximumFileSizeForSection1 = 5;
+            var maximumFileSizeForSection2 = 50;
+            var maximumFileSizeForSection3 = 50;
 
             /*
              var tr;
@@ -95,11 +104,37 @@
                 $('#commenttable').append(tr);
              */
 
-            var fnGenerateTD = function (intFileNumber) {
+            var fnGenerateTD = function (intFileNumber, sectionName) {
 
-                return '<tr class="fileRow">' +
+                if (sectionName == undefined || sectionName == null) {
+                    alert("Section Name Not defined. Please define Section name before proceding further");
+                    return false;
+                }
+
+                var section_name = sectionName.toString();
+
+                if (section_name == section1Name.Section1) {
+                    if (intFileNumber > maximumFileSizeForSection1) {
+                        alert("Maximum number of files already added for this section");
+                        return "<tr style='display:none;'><td colspan='3'></td></tr>";
+                    }
+                }
+                else if (section_name == section2Name.Section2) {
+                    if (intFileNumber > maximumFileSizeForSection2) {
+                        alert("Maximum number of files already added for this section");
+                        return "<tr style='display:none;'><td colspan='3'></td></tr>";
+                    }
+                }
+                else if (section_name == section3Name.Section3) {
+                    if (intFileNumber > maximumFileSizeForSection3) {
+                        alert("Maximum number of files already added for this section");
+                        return "<tr style='display:none;'><td colspan='3'></td></tr>";
+                    }
+                }
+                
+                return '<tr class="fileRow" data-number="{0}">'.format(intFileNumber.toString()) +
                         '<td>' +
-                        'File No.{0}</td >'.format(intFileNumber.toString()) +
+                    'File No.{0}</td >'.format(intFileNumber.toString()) +
                         '<td>' +
                             '<input id="File{0}" type="file" name="File{0}" />'.format(intFileNumber.toString()) +
                         '</td>' +
@@ -111,41 +146,33 @@
 
             $(document).on("click", ".addMoreFiles", function () {
 
+                var sectionName = $(this).parent().parent().parent().parent().attr("data-section-name");
+                console.log("Section Name Selected is " + sectionName);
+
                 var newFileLength = $(".fileRow").length + 1;
 
-                $('#tblFileUpload').append(fnGenerateTD(newFileLength));
+                $('#tblFileUpload').append(fnGenerateTD(newFileLength, sectionName));
 
             });
 
-            $("#btnSubmitWithoutPostBack").on("click", function () {
-                totalFileSize = 0;
-                var form = $("#frmData");
-                var params = form.serializeArray();
+            $("#btnUploadSection1Files").on("click", function () {
+                totalFileSize = 0;             
 
                 var progressBar = $("#progressBar");
 
-                var files = $("#File1")[0].files;
-
+                //var files = $("#File1")[0].files;
                 if (typeof (FormData) == "undefined") alert("Please update to latest browser");
-
+                debugger;
                 var customFormData = new FormData();
-
-                //Populating all files in custom form data
-                for (var i=0; i < files.length; i++)
-                {
-                    customFormData.append(files[i].name, files[i]);
-                    totalFileSize = totalFileSize + files[i].size; //In Bytes. Do whatever you want to do with size like maximum                    
-                }
-
-                progressBar.attr("value", 0);
-                progressBar.attr("max", totalFileSize);
-
-
-                //Populating all input field names (ensure that you have attribute name in their columns as id doesn't work
-                $.each(params, function (index,element) {
-                    customFormData.append(element.name, element.value);
-                });
-
+                for (let i = 0; i < $("[data-section-name='Section1'] input[type='file']").length; i++) {
+                    console.log("File Upload Control Number - " + i);
+                    var files = $("[data-section-name='Section1'] input[type='file']")[i].files;
+                    for (let j = 0; j < files.length; j++) {
+                        customFormData.append(files[j].name, files[j]);
+                        totalFileSize = totalFileSize + files[j].size; //In Bytes. Do whatever you want to do with size like maximum                    
+                    }                   
+                } //End of i=0;i++
+                console.log(customFormData);
                 var btn = $(this);
                 btn.val("Uploading..");
                 btn.prop("disabled", true);
@@ -157,16 +184,16 @@
                     method: "post",
                     xhr: function () {
                         //File Progress Handler
-                        var xhr = $.ajaxSettings.xhr();                        
+                        var xhr = $.ajaxSettings.xhr();
                         $("#divUploadProgress").fadeIn();
                         console.log("Total file size " + totalFileSize);
                         xhr.upload.onprogress = function (ev) {
-                            console.log(ev.loaded + " / " + ev.total);                           
+                            console.log(ev.loaded + " / " + ev.total);
                             progressBar.attr("value", ev.loaded);
                         }
                         return xhr;
                     },
-                  
+
                     contentType: false,
                     processData: false,
                     data: customFormData,
@@ -191,34 +218,36 @@
                         $("#divUploadProgress").fadeOut(2000);
                     }
                 }); //End of Ajax Functions
+              
+                
             });// End of event handler
 
-            $("#File1").on("change", function () {
-                totalFileSize = 0;
+            //$("#File1").on("change", function () {
+            //    totalFileSize = 0;
 
-                var files = $("#File1")[0].files;
-                var strSpanMessage = '';
+            //    var files = $("#File1")[0].files;
+            //    var strSpanMessage = '';
 
-                for (var i = 0; i < files.length; i++)
-                {                    
-                    totalFileSize = totalFileSize + files[i].size; //In bytes
-                    var fileName = files[i].name;
-                    var fileExtensionIndex = fileName.toLowerCase().lastIndexOf(".");
-                    var extension = fileName.substr(fileExtensionIndex);
-                    strSpanMessage = strSpanMessage.concat("Type of File is <i>", files[i].type, "</i>, File name is <b>", fileName + "</b> and file extension is (", extension, ")<br />");
-                }
-                if (totalFileSize > 0)
-                {
-                    strSpanMessage = strSpanMessage.concat("Total Selected File Size is ", (totalFileSize / 1024).toString(), " KB");
-                    $("#totalFilesInfo").html(strSpanMessage);
-                    console.log(strSpanMessage)
-                    $("#totalFilesInfo").show();                    
-                }
-                else
-                {
-                    $("#totalFilesInfo").hide();
-                }
-            });//End of File Change Event Handler           
+            //    for (var i = 0; i < files.length; i++)
+            //    {                    
+            //        totalFileSize = totalFileSize + files[i].size; //In bytes
+            //        var fileName = files[i].name;
+            //        var fileExtensionIndex = fileName.toLowerCase().lastIndexOf(".");
+            //        var extension = fileName.substr(fileExtensionIndex);
+            //        strSpanMessage = strSpanMessage.concat("Type of File is <i>", files[i].type, "</i>, File name is <b>", fileName + "</b> and file extension is (", extension, ")<br />");
+            //    }
+            //    if (totalFileSize > 0)
+            //    {
+            //        strSpanMessage = strSpanMessage.concat("Total Selected File Size is ", (totalFileSize / 1024).toString(), " KB");
+            //        $("#totalFilesInfo").html(strSpanMessage);
+            //        console.log(strSpanMessage)
+            //        $("#totalFilesInfo").show();                    
+            //    }
+            //    else
+            //    {
+            //        $("#totalFilesInfo").hide();
+            //    }
+            //});//End of File Change Event Handler           
 
         });
 
