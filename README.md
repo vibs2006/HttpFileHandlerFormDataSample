@@ -6,6 +6,15 @@ Two approaches are defined in this example.
 2. Upload mixed data (Form Fields and Files) using browser postback (input type is **Button**)
 
 #### Posting Multipart Formdata (inclusive of form fields and files) using AJAX Method of JQuery
+```html
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<form enctype="multipart/form-data" method="post" id="myForm1">
+    <p><textarea id="TextArea1" rows="2" cols="20" name="TextArea1"></textarea></p>
+    <p><input id="File1" type="file" multiple="multiple" /></p>
+    <input id="btnUpload" type="button" value="Submit" />
+</form>
+```
+
 ```js
   var form = $("#frmData");
   var params = form.serializeArray();
